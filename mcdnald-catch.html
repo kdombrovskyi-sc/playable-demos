@@ -29,9 +29,7 @@
         /* Main Game Container */
         .ad-container {
             width: 100%;
-            max-width: 400px;
             height: 100%;
-            max-height: 750px;
             background: radial-gradient(circle at top right, #da291c 0%, #9e0b0f 50%, #5a0002 100%);
             position: relative;
             overflow: hidden;
@@ -59,54 +57,11 @@
             100% { transform: translateY(-50px); }
         }
 
-        /* Top Header */
-        .ad-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            z-index: 20;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
-        }
-
-        .brand-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo {
-            width: 35px;
-            height: 35px;
-            background: #da291c;
-            color: #ffc72c;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 22px;
-            font-weight: 900;
-            line-height: 1;
-            border: 2px solid #ffc72c;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-
-        .brand-text-wrapper h1 {
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-
-        .brand-text-wrapper p {
-            font-size: 11px;
-            color: rgba(255,255,255,0.8);
-        }
-
         .score-pill {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            z-index: 20;
             font-size: 14px;
             font-weight: 700;
             background: rgba(0,0,0,0.5);
@@ -118,6 +73,7 @@
             opacity: 1;
             transition: opacity 0.5s;
             border: 1px solid rgba(255,255,255,0.2);
+            color: white;
         }
 
         /* Screens */
@@ -150,15 +106,15 @@
         }
 
         .start-logo {
-            width: 80px;
-            height: 80px;
+            width: clamp(60px, 20vmin, 100px);
+            height: clamp(60px, 20vmin, 100px);
             background: #da291c;
             color: #ffc72c;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 50px;
+            font-size: clamp(35px, 13vmin, 60px);
             font-weight: 900;
             margin-bottom: 15px;
             box-shadow: 0 0 25px rgba(0,0,0,0.6);
@@ -166,7 +122,7 @@
         }
 
         .start-title {
-            font-size: 26px;
+            font-size: clamp(20px, 6vmin, 30px);
             font-weight: 900;
             margin-bottom: 5px;
         }
@@ -184,7 +140,7 @@
         }
 
         .start-box {
-            font-size: 70px;
+            font-size: clamp(50px, 18vmin, 90px);
             filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
             animation: bounce 2s infinite ease-in-out;
         }
@@ -224,10 +180,10 @@
         /* Player Basket (Fries) */
         .player-basket {
             position: absolute;
-            bottom: 30px;
+            bottom: clamp(15px, 4vh, 40px);
             left: 50%;
             transform: translateX(-50%);
-            font-size: 70px;
+            font-size: clamp(50px, 18vmin, 90px);
             line-height: 1;
             z-index: 10;
             will-change: left;
@@ -237,7 +193,7 @@
         /* Falling Items */
         .falling-item {
             position: absolute;
-            font-size: 45px;
+            font-size: clamp(30px, 12vmin, 55px);
             filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
             z-index: 6;
             will-change: top;
@@ -249,7 +205,7 @@
         /* +1 / Bomb Float Text */
         .float-text {
             position: absolute;
-            font-size: 26px;
+            font-size: clamp(20px, 7vmin, 30px);
             font-weight: 900;
             color: #ffc72c;
             text-shadow: 0 3px 6px rgba(0,0,0,0.8);
@@ -291,7 +247,7 @@
         }
 
         .result-image {
-            font-size: 80px;
+            font-size: clamp(60px, 20vmin, 100px);
             margin-bottom: 10px;
             filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1));
             animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -303,7 +259,7 @@
         }
 
         .result-title {
-            font-size: 30px;
+            font-size: clamp(24px, 7vmin, 34px);
             font-weight: 900;
             color: #da291c;
             margin-bottom: 15px;
@@ -342,19 +298,9 @@
 
 <div class="ad-container" id="game-container">
 
-    <!-- Persistent Header -->
-    <header class="ad-header" id="main-header">
-        <div class="brand-info">
-            <div class="logo">M</div>
-            <div class="brand-text-wrapper">
-                <h1>McDonald's - Ad</h1>
-                <p>Catch treats, win big.</p>
-            </div>
-        </div>
-        <div class="score-pill" id="score-pill">
-            <span style="color: #ffc72c;">⭐</span> <span id="score-text">0/6</span>
-        </div>
-    </header>
+    <div class="score-pill" id="score-pill">
+        <span style="color: #ffc72c;">⭐</span> <span id="score-text">0/6</span>
+    </div>
 
     <!-- Start Screen Overlay -->
     <div id="screen-start" class="screen active">
@@ -418,7 +364,8 @@
 
     // Player Configuration
     let playerX = container.clientWidth / 2;
-    const playerWidth = 70; // Approximate width of the Fries emoji
+    const playerWidth = Math.max(50, container.clientWidth * 0.175);
+    const heightScale = container.clientHeight / 750;
 
     // Initial Start Sequence
     window.onload = () => {
@@ -466,7 +413,7 @@
         itemEl.innerText = emoji;
 
         // Random X position ensuring it stays within container bounds
-        const itemWidth = 45;
+        const itemWidth = Math.max(30, container.clientWidth * 0.1125);
         const startX = Math.random() * (container.clientWidth - itemWidth);
         itemEl.style.left = `${startX}px`;
         itemEl.style.top = `-60px`;
@@ -478,7 +425,7 @@
             el: itemEl,
             y: -60,
             x: startX,
-            speed: 3 + Math.random() * 3, // Variable fall speeds
+            speed: (3 + Math.random() * 3) * heightScale,
             type: isBad ? 'bad' : 'good'  // Strict JS state
         });
     }

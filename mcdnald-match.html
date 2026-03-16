@@ -28,9 +28,7 @@
         /* Main Game Container */
         .ad-container {
             width: 100%;
-            max-width: 400px;
             height: 100%;
-            max-height: 750px;
             /* Deep McDonald's Red Gradient */
             background: radial-gradient(circle at top right, #9e0b0f 0%, #5a0002 100%);
             position: relative;
@@ -54,48 +52,12 @@
             opacity: 0.5;
         }
 
-        /* Top Header */
-        .ad-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            z-index: 10;
-        }
-
-        .brand-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo {
-            width: 35px;
-            height: 35px;
-            background: #da291c;
-            color: #ffc72c;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 22px;
-            font-weight: 900;
-            line-height: 1;
-            border: 2px solid #ffc72c;
-        }
-
-        .brand-text-wrapper h1 {
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-
-        .brand-text-wrapper p {
-            font-size: 11px;
-            color: rgba(255,255,255,0.7);
-        }
-
         .score-pill {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            z-index: 20;
+            color: white;
             font-size: 14px;
             font-weight: 700;
             background: rgba(0, 0, 0, 0.4);
@@ -138,15 +100,15 @@
         }
 
         .start-logo {
-            width: 80px;
-            height: 80px;
+            width: clamp(60px, 20vmin, 100px);
+            height: clamp(60px, 20vmin, 100px);
             background: #da291c;
             color: #ffc72c;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 50px;
+            font-size: clamp(35px, 13vmin, 60px);
             font-weight: 900;
             margin-bottom: 20px;
             box-shadow: 0 0 30px rgba(0,0,0,0.5);
@@ -183,7 +145,7 @@
             gap: 15px;
             width: 100%;
             height: 100%;
-            max-height: 520px;
+            max-height: none;
         }
 
         /* Cards */
@@ -227,7 +189,7 @@
         /* The large "M" on the back of the cards */
         .card-back::after {
             content: 'M';
-            font-size: 60px;
+            font-size: clamp(40px, 15vmin, 75px);
             font-weight: 900;
             color: rgba(255, 255, 255, 0.3);
         }
@@ -245,7 +207,7 @@
         }
 
         .card-emoji {
-            font-size: 60px;
+            font-size: clamp(40px, 15vmin, 75px);
             margin-bottom: 10px;
             filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
         }
@@ -310,7 +272,7 @@
         }
 
         .result-image {
-            font-size: 70px;
+            font-size: clamp(50px, 18vmin, 90px);
             margin-bottom: 15px;
             animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -368,19 +330,9 @@
         <p class="start-loading">Get ready to play...</p>
     </div>
 
-    <!-- Persistent Header -->
-    <header class="ad-header" id="main-header">
-        <div class="brand-info">
-            <div class="logo">M</div>
-            <div class="brand-text-wrapper">
-                <h1>McDonald's - Ad</h1>
-                <p>Match meals, win big.</p>
-            </div>
-        </div>
-        <div class="score-pill">
-            <span style="opacity: 0.8;">🍟</span> <span id="score-text">0/3</span>
-        </div>
-    </header>
+    <div class="score-pill">
+        <span style="opacity: 0.8;">🍟</span> <span id="score-text">0/3</span>
+    </div>
 
     <!-- Game Screen -->
     <div id="screen-game" class="screen">

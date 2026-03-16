@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Match Donuts, Win Treats</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
@@ -22,14 +22,13 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden;
         }
 
         /* Main Game Container */
         .ad-container {
             width: 100%;
-            max-width: 400px;
             height: 100%;
-            max-height: 750px;
             background: radial-gradient(circle at center, #8a000e 0%, #4a0006 100%);
             position: relative;
             overflow: hidden;
@@ -39,48 +38,12 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* Top Header */
-        .ad-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            z-index: 10;
-        }
-
-        .brand-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo {
-            width: 35px;
-            height: 35px;
-            background: white;
-            color: #d81a2a;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 900;
-            font-size: 10px;
-            text-align: center;
-            line-height: 1;
-        }
-
-        .brand-text-wrapper h1 {
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-
-        .brand-text-wrapper p {
-            font-size: 11px;
-            color: rgba(255,255,255,0.7);
-        }
-
         .score-pill {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            z-index: 20;
+            color: white;
             font-size: 14px;
             font-weight: 700;
             background: rgba(0,0,0,0.4);
@@ -120,7 +83,7 @@
             gap: 15px;
             width: 100%;
             height: 100%;
-            max-height: 550px;
+            max-height: none;
             margin-top: 10px;
         }
 
@@ -164,7 +127,7 @@
 
         .card-back::after {
             content: 'T';
-            font-size: 40px;
+            font-size: clamp(30px, 10vmin, 50px);
             font-weight: 900;
             color: rgba(255,255,255,0.15);
         }
@@ -182,7 +145,7 @@
         }
 
         .card-emoji {
-            font-size: 50px;
+            font-size: clamp(35px, 13vmin, 65px);
             margin-bottom: 10px;
             filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
         }
@@ -253,7 +216,7 @@
         }
 
         .result-image {
-            font-size: 90px;
+            font-size: clamp(60px, 22vmin, 110px);
             margin-bottom: 20px;
             filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1));
         }
@@ -297,19 +260,9 @@
 
 <div class="ad-container">
 
-    <!-- Persistent Header -->
-    <header class="ad-header" id="main-header">
-        <div class="brand-info">
-            <div class="logo">Tim<br>Hortons</div>
-            <div class="brand-text-wrapper">
-                <h1>Tim Hortons - Ad</h1>
-                <p>Match donuts, win treats.</p>
-            </div>
-        </div>
-        <div class="score-pill">
-            <span>🍩</span> <span id="score-text">0/3</span>
-        </div>
-    </header>
+    <div class="score-pill">
+        <span>🍩</span> <span id="score-text">0/3</span>
+    </div>
 
     <!-- Game Screen -->
     <div id="screen-game" class="screen active">

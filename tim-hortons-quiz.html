@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Find Your Tims Match</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
@@ -22,14 +22,13 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden;
         }
 
         /* Main Game Container */
         .ad-container {
             width: 100%;
-            max-width: 400px;
             height: 100%;
-            max-height: 750px;
             background: radial-gradient(circle at center, #d81a2a 0%, #9e0b16 100%);
             position: relative;
             overflow: hidden;
@@ -39,48 +38,11 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* Top Header */
-        .ad-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            z-index: 10;
-        }
-
-        .brand-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo {
-            width: 35px;
-            height: 35px;
-            background: white;
-            color: #d81a2a;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 900;
-            font-size: 10px;
-            text-align: center;
-            line-height: 1;
-        }
-
-        .brand-text-wrapper h1 {
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-
-        .brand-text-wrapper p {
-            font-size: 11px;
-            color: rgba(255,255,255,0.7);
-        }
-
         .step-indicator {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            z-index: 20;
             font-size: 12px;
             background: rgba(0,0,0,0.2);
             padding: 4px 10px;
@@ -96,7 +58,7 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            padding: 80px 20px 40px 20px;
+            padding: clamp(40px, 12vh, 80px) 20px clamp(20px, 5vh, 40px) 20px;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.4s ease;
@@ -121,7 +83,7 @@
 
         .main-title {
             text-align: center;
-            font-size: 32px;
+            font-size: clamp(24px, 8vmin, 36px);
             font-weight: 900;
             line-height: 1.1;
             margin-bottom: 40px;
@@ -222,10 +184,10 @@
         }
 
         .loading-icon {
-            font-size: 60px;
+            font-size: clamp(45px, 15vmin, 75px);
             background: rgba(255,255,255,0.1);
-            width: 120px;
-            height: 120px;
+            width: clamp(90px, 30vmin, 150px);
+            height: clamp(90px, 30vmin, 150px);
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -275,7 +237,7 @@
         }
 
         .result-image {
-            font-size: 90px;
+            font-size: clamp(60px, 22vmin, 110px);
             margin-bottom: 10px;
             filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1));
         }
@@ -324,17 +286,7 @@
 
 <div class="ad-container">
 
-    <!-- Persistent Header (Shown on Q1 & Q2) -->
-    <header class="ad-header" id="main-header">
-        <div class="brand-info">
-            <div class="logo">Tim<br>Hortons</div>
-            <div class="brand-text-wrapper">
-                <h1>Tim Hortons - Ad</h1>
-                <p>Find your Tims match</p>
-            </div>
-        </div>
-        <div class="step-indicator" id="step-text">1 of 2</div>
-    </header>
+    <div class="step-indicator" id="step-text">1 of 2</div>
 
     <!-- Question 1 -->
     <div id="screen-q1" class="screen active">
@@ -479,7 +431,7 @@
 
     function goToLoading() {
         // Hide header and pagination for loading/result screens
-        document.getElementById('main-header').classList.add('hidden');
+        document.getElementById('step-text').classList.add('hidden');
         document.getElementById('pagination-dots').classList.add('hidden');
 
         goToScreen('screen-loading');
@@ -509,7 +461,7 @@
 
         // Reset DOM
         document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-        document.getElementById('main-header').classList.remove('hidden');
+        document.getElementById('step-text').classList.remove('hidden');
         document.getElementById('pagination-dots').classList.remove('hidden');
         document.getElementById('step-text').innerText = '1 of 2';
         document.getElementById('dot-1').classList.add('active');
