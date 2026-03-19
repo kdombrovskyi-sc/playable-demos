@@ -181,22 +181,23 @@
         .player-basket {
             position: absolute;
             bottom: clamp(15px, 4vh, 40px);
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;
             font-size: clamp(50px, 18vmin, 90px);
             line-height: 1;
             z-index: 10;
-            will-change: left;
+            will-change: transform;
+            transition: transform 150ms ease-out;
             filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
         }
 
         /* Falling Items */
         .falling-item {
             position: absolute;
+            top: 0;
             font-size: clamp(30px, 12vmin, 55px);
             filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
             z-index: 6;
-            will-change: top;
+            will-change: transform;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -364,8 +365,14 @@
 
     // Player Configuration
     let playerX = container.clientWidth / 2;
+    let targetX = playerX;
+    let smoothedTilt = 0;
+    let _deviceGamma = null;
     const playerWidth = Math.max(50, container.clientWidth * 0.175);
     const heightScale = container.clientHeight / 750;
+    const TILT_CLAMP = 0.5;
+    const TILT_SMOOTHING = 0.08;
+    player.style.transform = `translateX(${playerX}px) translateX(-50%)`;
 
     // Initial Start Sequence
     window.onload = () => {
@@ -416,7 +423,7 @@
         const itemWidth = Math.max(30, container.clientWidth * 0.1125);
         const startX = Math.random() * (container.clientWidth - itemWidth);
         itemEl.style.left = `${startX}px`;
-        itemEl.style.top = `-60px`;
+        itemEl.style.transform = `translateY(-60px)`;
 
         screenGame.appendChild(itemEl);
 
@@ -433,7 +440,22 @@
     function update() {
         if (!isPlaying) return;
 
-        // Bounding rects are the most reliable method for overlap detection
+        let rawTilt = null;
+        const accel = window._nativeAccel;
+        if (accel && typeof accel.x === 'number') {
+            rawTilt = Math.max(-1, Math.min(1, accel.x / TILT_CLAMP));
+        } else if (_deviceGamma !== null) {
+            rawTilt = Math.max(-1, Math.min(1, _deviceGamma / 30));
+        }
+        if (rawTilt !== null) {
+            smoothedTilt += (rawTilt - smoothedTilt) * TILT_SMOOTHING;
+            const cw = container.clientWidth;
+            let newX = (cw / 2) + smoothedTilt * (cw / 2);
+            targetX = Math.max(playerWidth / 2, Math.min(cw - playerWidth / 2, newX));
+        }
+
+        player.style.transform = `translateX(${Math.round(targetX)}px) translateX(-50%)`;
+
         const playerRect = player.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
 
@@ -443,7 +465,7 @@
 
             // Move item down
             item.y += item.speed;
-            item.el.style.top = `${item.y}px`;
+            item.el.style.transform = `translateY(${item.y}px)`;
 
             const itemRect = item.el.getBoundingClientRect();
 
@@ -560,8 +582,8 @@
             if (x < playerWidth / 2) x = playerWidth / 2;
             if (x > containerRect.width - playerWidth / 2) x = containerRect.width - playerWidth / 2;
 
+            targetX = x;
             playerX = x;
-            player.style.left = `${playerX}px`;
         };
 
         // Touch & Drag Controls
@@ -583,55 +605,8 @@
             if (isMouseDown && isPlaying) updatePlayerX(e.clientX);
         });
 
-        // Native accelerometer shim: the native layer sets window._nativeAccel = {x, y, z}
-        // CMAcceleration x maps to lateral tilt (positive = tilted right).
-        // Clamp to [-0.5, 0.5] for comfortable gameplay (~30° tilt range).
-        const TILT_CLAMP = 0.5;
-        let accelPollId = null;
-
-        function pollNativeAccel() {
-            if (!isPlaying) {
-                accelPollId = requestAnimationFrame(pollNativeAccel);
-                return;
-            }
-
-            const accel = window._nativeAccel;
-            if (accel && typeof accel.x === 'number') {
-                let tilt = accel.x;
-                if (tilt > TILT_CLAMP) tilt = TILT_CLAMP;
-                if (tilt < -TILT_CLAMP) tilt = -TILT_CLAMP;
-
-                const containerWidth = container.clientWidth;
-                let newX = (containerWidth / 2) + (tilt / TILT_CLAMP) * (containerWidth / 2);
-
-                if (newX < playerWidth / 2) newX = playerWidth / 2;
-                if (newX > containerWidth - playerWidth / 2) newX = containerWidth - playerWidth / 2;
-
-                playerX = newX;
-                player.style.left = `${playerX}px`;
-            }
-
-            accelPollId = requestAnimationFrame(pollNativeAccel);
-        }
-
-        accelPollId = requestAnimationFrame(pollNativeAccel);
-
-        // Browser deviceorientation fallback (for non-native contexts)
         window.addEventListener('deviceorientation', (e) => {
-            if (!isPlaying || e.gamma === null) return;
-
-            let tilt = e.gamma;
-            if (tilt > 30) tilt = 30;
-            if (tilt < -30) tilt = -30;
-
-            const containerWidth = container.clientWidth;
-            let newX = (containerWidth / 2) + ((tilt / 30) * (containerWidth / 2));
-
-            if (newX < playerWidth / 2) newX = playerWidth / 2;
-            if (newX > containerWidth - playerWidth / 2) newX = containerWidth - playerWidth / 2;
-
-            playerX = newX;
-            player.style.left = `${playerX}px`;
+            if (e.gamma !== null) _deviceGamma = e.gamma;
         });
     }
 </script>

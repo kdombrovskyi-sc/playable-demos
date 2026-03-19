@@ -163,14 +163,13 @@
         .player-box {
             position: absolute;
             bottom: clamp(15px, 4vh, 40px);
-            left: 50%;
+            left: 0;
             width: clamp(60px, 20vw, 100px);
             height: clamp(38px, 7vh, 60px);
             background: #a90011;
             border: 2px solid #ff4d5a;
             border-top: none;
             border-radius: 0 0 10px 10px;
-            transform: translateX(-50%);
             display: flex;
             justify-content: center;
             align-items: flex-end;
@@ -178,7 +177,8 @@
             font-size: 26px;
             box-shadow: 0 10px 15px rgba(0,0,0,0.3), inset 0 -10px 15px rgba(0,0,0,0.2);
             z-index: 10;
-            will-change: left;
+            will-change: transform;
+            transition: transform 150ms ease-out;
         }
 
         .player-box::before {
@@ -197,10 +197,11 @@
         /* Falling Items */
         .falling-item {
             position: absolute;
+            top: 0;
             font-size: clamp(25px, 9vmin, 45px);
             filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
             z-index: 6;
-            will-change: top;
+            will-change: transform;
         }
 
         /* +1 / -1 Float Text */
@@ -363,8 +364,14 @@
 
     // Player position setup
     let playerX = container.clientWidth / 2;
+    let targetX = playerX;
+    let smoothedTilt = 0;
+    let _deviceGamma = null;
     const playerWidth = Math.max(60, container.clientWidth * 0.2);
     const heightScale = container.clientHeight / 750;
+    const TILT_CLAMP = 0.5;
+    const TILT_SMOOTHING = 0.08;
+    player.style.transform = `translateX(${playerX}px) translateX(-50%)`;
 
     // Initialization Sequence
     setTimeout(() => {
@@ -418,7 +425,7 @@
         // Random X position ensuring it stays within bounds
         const startX = Math.random() * (container.clientWidth - Math.max(28, container.clientWidth * 0.1));
         itemEl.style.left = `${startX}px`;
-        itemEl.style.top = `-50px`;
+        itemEl.style.transform = `translateY(-50px)`;
 
         screenGame.appendChild(itemEl);
 
@@ -433,6 +440,22 @@
     function update() {
         if (!isPlaying) return;
 
+        let rawTilt = null;
+        const accel = window._nativeAccel;
+        if (accel && typeof accel.x === 'number') {
+            rawTilt = Math.max(-1, Math.min(1, accel.x / TILT_CLAMP));
+        } else if (_deviceGamma !== null) {
+            rawTilt = Math.max(-1, Math.min(1, _deviceGamma / 30));
+        }
+        if (rawTilt !== null) {
+            smoothedTilt += (rawTilt - smoothedTilt) * TILT_SMOOTHING;
+            const cw = container.clientWidth;
+            let newX = (cw / 2) + smoothedTilt * (cw / 2);
+            targetX = Math.max(playerWidth / 2, Math.min(cw - playerWidth / 2, newX));
+        }
+
+        player.style.transform = `translateX(${Math.round(targetX)}px) translateX(-50%)`;
+
         const playerRect = player.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
 
@@ -440,7 +463,7 @@
         for (let i = activeItems.length - 1; i >= 0; i--) {
             let item = activeItems[i];
             item.y += item.speed;
-            item.el.style.top = `${item.y}px`;
+            item.el.style.transform = `translateY(${item.y}px)`;
 
             // Check collision using bounding rects relative to viewport
             const itemRect = item.el.getBoundingClientRect();
@@ -547,8 +570,8 @@
             if (x < playerWidth / 2) x = playerWidth / 2;
             if (x > containerRect.width - playerWidth / 2) x = containerRect.width - playerWidth / 2;
 
+            targetX = x;
             playerX = x;
-            player.style.left = `${playerX}px`;
         };
 
         // Touch Events
@@ -566,28 +589,8 @@
             if (isMouseDown && isPlaying) updatePlayerX(e.clientX);
         });
 
-        // Device Orientation (Tilt)
         window.addEventListener('deviceorientation', (e) => {
-            if (!isPlaying || e.gamma === null) return;
-
-            // Gamma is the left-to-right tilt in degrees, where right is positive
-            let tilt = e.gamma;
-
-            // Constrain tilt to a practical range (-30 to 30)
-            if (tilt > 30) tilt = 30;
-            if (tilt < -30) tilt = -30;
-
-            // Map tilt (-30 to 30) to screen width
-            const containerWidth = container.clientWidth;
-            // Base X is center, adjust based on tilt percentage
-            let newX = (containerWidth / 2) + ((tilt / 30) * (containerWidth / 2));
-
-            // Clamp
-            if (newX < playerWidth / 2) newX = playerWidth / 2;
-            if (newX > containerWidth - playerWidth / 2) newX = containerWidth - playerWidth / 2;
-
-            playerX = newX;
-            player.style.left = `${playerX}px`;
+            if (e.gamma !== null) _deviceGamma = e.gamma;
         });
     }
 </script>
