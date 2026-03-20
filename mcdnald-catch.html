@@ -16,27 +16,26 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             background-color: #111;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            touch-action: none; /* Prevent page scrolling while dragging */
+            margin: 0;
+            touch-action: none;
         }
 
         /* Main Game Container */
         .ad-container {
-            width: 100%;
-            height: 100%;
+            position: fixed;
+            inset: 0;
             background: radial-gradient(circle at top right, #da291c 0%, #9e0b0f 50%, #5a0002 100%);
-            position: relative;
             overflow: hidden;
             color: white;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         /* Subtle Background Pattern */
@@ -59,17 +58,17 @@
 
         .score-pill {
             position: absolute;
-            top: 15px;
-            right: 20px;
+            top: clamp(8px, 3vmin, 15px);
+            right: clamp(10px, 4vmin, 20px);
             z-index: 20;
-            font-size: 14px;
+            font-size: clamp(11px, 3.5vmin, 14px);
             font-weight: 700;
             background: rgba(0,0,0,0.5);
-            padding: 6px 12px;
+            padding: clamp(4px, 1.5vmin, 6px) clamp(8px, 3vmin, 12px);
             border-radius: 20px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: clamp(4px, 1.5vmin, 6px);
             opacity: 1;
             transition: opacity 0.5s;
             border: 1px solid rgba(255,255,255,0.2);
@@ -116,7 +115,7 @@
             align-items: center;
             font-size: clamp(35px, 13vmin, 60px);
             font-weight: 900;
-            margin-bottom: 15px;
+            margin-bottom: clamp(8px, 3vmin, 15px);
             box-shadow: 0 0 25px rgba(0,0,0,0.6);
             border: 3px solid #ffc72c;
         }
@@ -124,19 +123,19 @@
         .start-title {
             font-size: clamp(20px, 6vmin, 30px);
             font-weight: 900;
-            margin-bottom: 5px;
+            margin-bottom: clamp(3px, 1vmin, 5px);
         }
 
         .start-subtitle {
-            font-size: 18px;
+            font-size: clamp(14px, 4.5vmin, 18px);
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: clamp(10px, 4vmin, 20px);
         }
 
         .start-loading {
-            font-size: 14px;
+            font-size: clamp(11px, 3.5vmin, 14px);
             color: rgba(255,255,255,0.6);
-            margin-bottom: 40px;
+            margin-bottom: clamp(20px, 8vmin, 40px);
         }
 
         .start-box {
@@ -162,13 +161,13 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.7);
-            padding: 12px 20px;
+            padding: clamp(8px, 3vmin, 12px) clamp(14px, 5vmin, 20px);
             border-radius: 25px;
-            font-size: 14px;
+            font-size: clamp(11px, 3.5vmin, 14px);
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: clamp(6px, 2.5vmin, 10px);
             white-space: nowrap;
             opacity: 1;
             transition: opacity 1s ease;
@@ -229,17 +228,17 @@
             background: rgba(0, 0, 0, 0.85);
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: clamp(12px, 5vmin, 20px);
             z-index: 30;
         }
 
         .result-card {
             background: #f4f4f4;
             color: #333;
-            width: 100%;
+            width: 90%;
             max-width: 340px;
             border-radius: 20px;
-            padding: 40px 20px;
+            padding: clamp(24px, 8vmin, 40px) clamp(14px, 5vmin, 20px);
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             display: flex;
@@ -263,28 +262,28 @@
             font-size: clamp(24px, 7vmin, 34px);
             font-weight: 900;
             color: #da291c;
-            margin-bottom: 15px;
+            margin-bottom: clamp(8px, 3vmin, 15px);
         }
 
         .result-desc {
-            font-size: 16px;
+            font-size: clamp(13px, 4vmin, 16px);
             color: #444;
             line-height: 1.4;
-            margin-bottom: 30px;
+            margin-bottom: clamp(16px, 6vmin, 30px);
             font-weight: 700;
         }
 
         .action-btn {
             background: transparent;
             border: 2px solid #da291c;
-            padding: 12px 30px;
+            padding: clamp(8px, 3vmin, 12px) clamp(18px, 7vmin, 30px);
             border-radius: 25px;
-            font-size: 15px;
+            font-size: clamp(12px, 3.8vmin, 15px);
             font-weight: 800;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: clamp(5px, 2vmin, 8px);
             color: #da291c;
             transition: all 0.2s;
         }
@@ -368,10 +367,16 @@
     let targetX = playerX;
     let smoothedTilt = 0;
     let _deviceGamma = null;
-    const playerWidth = Math.max(50, container.clientWidth * 0.175);
-    const heightScale = container.clientHeight / 750;
     const TILT_CLAMP = 0.5;
     const TILT_SMOOTHING = 0.08;
+
+    function getPlayerWidth() {
+        return Math.max(50, container.clientWidth * 0.175);
+    }
+    function getHeightScale() {
+        return container.clientHeight / 750;
+    }
+
     player.style.transform = `translateX(${playerX}px) translateX(-50%)`;
 
     function beginCountdown() {
@@ -446,20 +451,20 @@
         itemEl.innerText = emoji;
 
         // Random X position ensuring it stays within container bounds
-        const itemWidth = Math.max(30, container.clientWidth * 0.1125);
-        const startX = Math.random() * (container.clientWidth - itemWidth);
+        const cw = container.clientWidth;
+        const itemWidth = Math.max(30, cw * 0.1125);
+        const startX = Math.random() * (cw - itemWidth);
         itemEl.style.left = `${startX}px`;
         itemEl.style.transform = `translateY(-60px)`;
 
         screenGame.appendChild(itemEl);
 
-        // Track state completely inside the JS array to avoid dataset errors
         activeItems.push({
             el: itemEl,
             y: -60,
             x: startX,
-            speed: (3 + Math.random() * 3) * heightScale,
-            type: isBad ? 'bad' : 'good'  // Strict JS state
+            speed: (3 + Math.random() * 3) * getHeightScale(),
+            type: isBad ? 'bad' : 'good'
         });
     }
 
@@ -476,8 +481,9 @@
         if (rawTilt !== null) {
             smoothedTilt += (rawTilt - smoothedTilt) * TILT_SMOOTHING;
             const cw = container.clientWidth;
+            const pw = getPlayerWidth();
             let newX = (cw / 2) + smoothedTilt * (cw / 2);
-            targetX = Math.max(playerWidth / 2, Math.min(cw - playerWidth / 2, newX));
+            targetX = Math.max(pw / 2, Math.min(cw - pw / 2, newX));
         }
 
         player.style.transform = `translateX(${Math.round(targetX)}px) translateX(-50%)`;
@@ -495,10 +501,8 @@
 
             const itemRect = item.el.getBoundingClientRect();
 
-            // AABB (Axis-Aligned Bounding Box) Collision Detection
-            // Padding added so the player has to overlap the middle of the basket
-            const hitPaddingX = 15;
-            const hitPaddingY = 20;
+            const hitPaddingX = Math.max(8, container.clientWidth * 0.04);
+            const hitPaddingY = Math.max(10, container.clientHeight * 0.03);
 
             if (
                 itemRect.left < (playerRect.right - hitPaddingX) &&
@@ -528,7 +532,7 @@
         // Read the type safely from our tracked JS object, ignoring DOM completely
         if (item.type === 'good') {
             score++;
-            showFloatText('+1', item.x, player.offsetTop - 40, false);
+            showFloatText('+1', item.x, player.offsetTop - container.clientHeight * 0.05, false);
             updateScoreUI();
 
             // Clean up item
@@ -541,7 +545,7 @@
             }
         } else if (item.type === 'bad') {
             // Bomb caught -> Instant Lose
-            showFloatText('💥', item.x, player.offsetTop - 40, true);
+            showFloatText('💥', item.x, player.offsetTop - container.clientHeight * 0.05, true);
             item.el.remove();
             activeItems.splice(index, 1);
             triggerLose();
@@ -603,10 +607,11 @@
     function setupControls() {
         const updatePlayerX = (clientX) => {
             const containerRect = container.getBoundingClientRect();
+            const pw = getPlayerWidth();
             let x = clientX - containerRect.left;
 
-            if (x < playerWidth / 2) x = playerWidth / 2;
-            if (x > containerRect.width - playerWidth / 2) x = containerRect.width - playerWidth / 2;
+            if (x < pw / 2) x = pw / 2;
+            if (x > containerRect.width - pw / 2) x = containerRect.width - pw / 2;
 
             targetX = x;
             playerX = x;
