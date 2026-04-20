@@ -81,7 +81,10 @@
             width: clamp(36px,12vmin,60px); height: auto;
             filter: drop-shadow(0 5px 8px rgba(0,0,0,0.4));
         }
-        .falling-item.bad img { filter: grayscale(1) brightness(0.5) drop-shadow(0 5px 8px rgba(0,0,0,0.4)); }
+        .falling-item.bad {
+            font-size: clamp(30px,12vmin,55px);
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+        }
 
         .float-text {
             position: absolute; font-size: clamp(20px,7vmin,30px); font-weight: 900;
@@ -236,17 +239,22 @@
     }
 
     const BOTTLE_SRC = 'assets/loreal-bottle.png';
+    const BAD_ITEMS = ['💣'];
 
     function spawnItem() {
         if (!isPlaying) return;
         const isBad = Math.random() > 0.78;
         const itemEl = document.createElement('div');
         itemEl.classList.add('falling-item');
-        if (isBad) itemEl.classList.add('bad');
-        const img = document.createElement('img');
-        img.src = BOTTLE_SRC;
-        img.alt = '';
-        itemEl.appendChild(img);
+        if (isBad) {
+            itemEl.classList.add('bad');
+            itemEl.innerText = BAD_ITEMS[Math.floor(Math.random() * BAD_ITEMS.length)];
+        } else {
+            const img = document.createElement('img');
+            img.src = BOTTLE_SRC;
+            img.alt = '';
+            itemEl.appendChild(img);
+        }
 
         const cw = container.clientWidth;
         const itemWidth = Math.max(30, cw * 0.1);
