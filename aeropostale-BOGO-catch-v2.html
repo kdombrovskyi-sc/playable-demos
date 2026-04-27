@@ -541,15 +541,21 @@
     if (typeof mraid !== 'undefined') {
         mraid.addEventListener('viewableChange', onViewable);
 
-        if (mraid.getState() !== 'loading' && mraid.isViewable()) {
-            tryStart();
-        }
-
-        mraid.addEventListener('ready', function () {
+        function checkAndStart() {
             if (mraid.isViewable()) {
                 tryStart();
             }
-        });
+        }
+
+        if (mraid.getState() === 'loading') {
+            mraid.addEventListener('ready', checkAndStart);
+        } else {
+            checkAndStart();
+        }
+
+        setTimeout(function() {
+            if (!hasStarted) tryStart();
+        }, 4000);
     } else {
         setTimeout(beginCountdown, 2500);
     }
