@@ -486,6 +486,8 @@
     let gameLoop;
     let spawnInterval;
     let activeItems = [];
+    let gameStartTime = 0;
+    const SKIP_TO_END_THRESHOLD_MS = 1000;
 
     // DOM Elements
     const container = document.getElementById('game-container');
@@ -572,6 +574,7 @@
         score = 0;
         updateScoreUI();
         isPlaying = true;
+        gameStartTime = Date.now();
 
         activeItems.forEach(item => item.el.remove());
         activeItems = [];
@@ -789,22 +792,65 @@
             playerX = x;
         };
 
+        const TAP_MAX_MOVE_PX = 10;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchMoved = false;
+
+        const maybeSkipToEnd = () => {
+            if (!isPlaying) return false;
+            if (score >= TARGET_SCORE) return false;
+            if (Date.now() - gameStartTime < SKIP_TO_END_THRESHOLD_MS) return false;
+            triggerWin();
+            return true;
+        };
+
+        container.addEventListener('touchstart', (e) => {
+            if (!isPlaying) return;
+            const t = e.touches[0];
+            touchStartX = t.clientX;
+            touchStartY = t.clientY;
+            touchMoved = false;
+        }, { passive: true });
+
         container.addEventListener('touchmove', (e) => {
             if(!isPlaying) return;
             e.preventDefault();
-            updatePlayerX(e.touches[0].clientX);
+            const t = e.touches[0];
+            if (Math.abs(t.clientX - touchStartX) > TAP_MAX_MOVE_PX ||
+                Math.abs(t.clientY - touchStartY) > TAP_MAX_MOVE_PX) {
+                touchMoved = true;
+            }
+            updatePlayerX(t.clientX);
         }, { passive: false });
 
+        container.addEventListener('touchend', () => {
+            if (!touchMoved) maybeSkipToEnd();
+        });
+
         let isMouseDown = false;
+        let mouseDownX = 0;
+        let mouseDownY = 0;
+        let mouseMoved = false;
         container.addEventListener('mousedown', (e) => {
             isMouseDown = true;
+            mouseDownX = e.clientX;
+            mouseDownY = e.clientY;
+            mouseMoved = false;
             updatePlayerX(e.clientX);
         });
         window.addEventListener('mouseup', () => {
+            if (isMouseDown && !mouseMoved) maybeSkipToEnd();
             isMouseDown = false;
         });
         container.addEventListener('mousemove', (e) => {
-            if (isMouseDown && isPlaying) updatePlayerX(e.clientX);
+            if (isMouseDown) {
+                if (Math.abs(e.clientX - mouseDownX) > TAP_MAX_MOVE_PX ||
+                    Math.abs(e.clientY - mouseDownY) > TAP_MAX_MOVE_PX) {
+                    mouseMoved = true;
+                }
+                if (isPlaying) updatePlayerX(e.clientX);
+            }
         });
 
         window.addEventListener('deviceorientation', (e) => {
