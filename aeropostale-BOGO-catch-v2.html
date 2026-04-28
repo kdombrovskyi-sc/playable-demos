@@ -564,12 +564,8 @@
         } else {
             checkAndStart();
         }
-
-        setTimeout(function() {
-            if (!hasStarted) tryStart();
-        }, 4000);
     } else {
-        setTimeout(beginCountdown, 2500);
+        beginCountdown();
     }
 
     function startGame() {
