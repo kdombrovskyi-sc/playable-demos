@@ -160,8 +160,9 @@
         }
 
         .start-cart {
-            width: clamp(80px, 25vmin, 130px);
-            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
+            font-size: 72px;
+            line-height: 1;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
             animation: bounce 2s infinite ease-in-out;
         }
 
@@ -203,13 +204,15 @@
             position: absolute;
             bottom: clamp(15px, 4vh, 40px);
             left: 0;
-            width: clamp(80px, 22vmin, 120px);
-            height: clamp(65px, 18vmin, 100px);
+            font-size: 72px;
             line-height: 1;
             z-index: 10;
             will-change: transform;
             transition: transform 150ms ease-out;
-            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.25));
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         /* Falling Items */
@@ -443,51 +446,13 @@
         <h2 class="start-title">Aeropostale</h2>
         <p class="start-subtitle">Catch items, win BOGO!</p>
         <p class="start-loading">Get ready to play...</p>
-        <div class="start-cart">
-            <svg width="100%" height="100%" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="45" cy="85" r="7" fill="#111"/>
-                <circle cx="45" cy="85" r="3" fill="#666"/>
-                <circle cx="85" cy="85" r="7" fill="#111"/>
-                <circle cx="85" cy="85" r="3" fill="#666"/>
-                <path d="M35 70 L45 85 M85 65 L85 85 M35 65 L90 65 M35 65 L25 25" fill="none" stroke="#666" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                <polygon points="25,25 105,25 90,65 35,65" fill="rgba(255,255,255,0.3)" stroke="#555" stroke-width="3" stroke-linejoin="round"/>
-                <path d="M25 25 L12 25" fill="none" stroke="#444" stroke-width="4" stroke-linecap="round"/>
-                <path d="M15 21 L15 29" fill="none" stroke="#222" stroke-width="4" stroke-linecap="round"/>
-                <line x1="28" y1="35" x2="101" y2="35" stroke="#777" stroke-width="1.5"/>
-                <line x1="30" y1="45" x2="97" y2="45" stroke="#777" stroke-width="1.5"/>
-                <line x1="33" y1="55" x2="93" y2="55" stroke="#777" stroke-width="1.5"/>
-                <line x1="40" y1="25" x2="45" y2="65" stroke="#777" stroke-width="1.5"/>
-                <line x1="55" y1="25" x2="58" y2="65" stroke="#777" stroke-width="1.5"/>
-                <line x1="70" y1="25" x2="71" y2="65" stroke="#777" stroke-width="1.5"/>
-                <line x1="85" y1="25" x2="84" y2="65" stroke="#777" stroke-width="1.5"/>
-                <line x1="25" y1="25" x2="45" y2="65" stroke="#555" stroke-width="2"/>
-            </svg>
-        </div>
+        <div class="start-cart">🛒</div>
     </div>
 
     <!-- Game Screen -->
     <div id="screen-game" class="screen">
         <div class="tilt-hint" id="tilt-hint">📱 Tilt your phone to catch items!</div>
-        <div class="player-basket" id="player">
-            <svg width="100%" height="100%" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="45" cy="85" r="7" fill="#111"/>
-                <circle cx="45" cy="85" r="3" fill="#666"/>
-                <circle cx="85" cy="85" r="7" fill="#111"/>
-                <circle cx="85" cy="85" r="3" fill="#666"/>
-                <path d="M35 70 L45 85 M85 65 L85 85 M35 65 L90 65 M35 65 L25 25" fill="none" stroke="#666" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                <polygon points="25,25 105,25 90,65 35,65" fill="rgba(255,255,255,0.3)" stroke="#555" stroke-width="3" stroke-linejoin="round"/>
-                <path d="M25 25 L12 25" fill="none" stroke="#444" stroke-width="4" stroke-linecap="round"/>
-                <path d="M15 21 L15 29" fill="none" stroke="#222" stroke-width="4" stroke-linecap="round"/>
-                <line x1="28" y1="35" x2="101" y2="35" stroke="#777" stroke-width="1.5"/>
-                <line x1="30" y1="45" x2="97" y2="45" stroke="#777" stroke-width="1.5"/>
-                <line x1="33" y1="55" x2="93" y2="55" stroke="#777" stroke-width="1.5"/>
-                <line x1="40" y1="25" x2="45" y2="65" stroke="#777" stroke-width="1.5"/>
-                <line x1="55" y1="25" x2="58" y2="65" stroke="#777" stroke-width="1.5"/>
-                <line x1="70" y1="25" x2="71" y2="65" stroke="#777" stroke-width="1.5"/>
-                <line x1="85" y1="25" x2="84" y2="65" stroke="#777" stroke-width="1.5"/>
-                <line x1="25" y1="25" x2="45" y2="65" stroke="#555" stroke-width="2"/>
-            </svg>
-        </div>
+        <div class="player-basket" id="player">🛒</div>
     </div>
 
     <!-- Win Screen -->
