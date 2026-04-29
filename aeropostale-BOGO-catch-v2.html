@@ -459,7 +459,7 @@
 
     <!-- Win Screen -->
     <div id="screen-win" class="screen overlay-screen">
-        <div class="result-heading">YOU WON!</div>
+        <div class="result-heading" id="result-heading">YOU WON!</div>
         <div class="result-card" onclick="handleCTA()" role="button" tabindex="0">
             <img class="result-image" id="reward-img" src="https://kdombrovskyi-sc.github.io/playable-demos/reward.png" alt="BOGO Reward">
             <h2 class="result-title">BOGO JEANS & SHORTS 👖👖</h2>
@@ -491,6 +491,17 @@
     let gameStartTime = 0;
     const SKIP_TO_END_THRESHOLD_MS = 1000;
 
+    function setLeftNavZoneEnabled(enabled) {
+        if (window.ScPlayableAd && typeof ScPlayableAd.setLeftNavZoneEnabled === 'function') {
+            ScPlayableAd.setLeftNavZoneEnabled(enabled);
+        }
+    }
+    function setRightNavZoneEnabled(enabled) {
+        if (window.ScPlayableAd && typeof ScPlayableAd.setRightNavZoneEnabled === 'function') {
+            ScPlayableAd.setRightNavZoneEnabled(enabled);
+        }
+    }
+
     // DOM Elements
     const container = document.getElementById('game-container');
     const player = document.getElementById('player');
@@ -499,6 +510,17 @@
     const screenWin = document.getElementById('screen-win');
     const scoreText = document.getElementById('score-text');
     const tiltHint = document.getElementById('tilt-hint');
+    const resultHeading = document.getElementById('result-heading');
+
+    // End-card left-edge tap restarts the game. The native nav layer leaves the left 15%
+    // strip pageable until triggerWin() disables it, after which all left-strip taps land
+    // on the win overlay's backdrop (the centered card/buttons aren't in that strip), so
+    // here we treat a backdrop tap in the left zone as "Play Again".
+    screenWin.addEventListener('click', (e) => {
+        if (e.target !== screenWin) return;
+        if (e.clientX >= window.innerWidth * 0.15) return;
+        resetGame();
+    });
 
     // Player Configuration
     let playerX = container.clientWidth / 2;
@@ -530,7 +552,7 @@
                     tiltHint.style.opacity = '0';
                 }, 3500);
             }, 300);
-        }, 1200);
+        }, 700);
     }
 
     // MRAID Integration
@@ -581,6 +603,13 @@
 
         spawnInterval = setInterval(spawnItem, 800);
         gameLoop = requestAnimationFrame(update);
+
+        // Mirror the maybeSkipToEnd grace window: until 1s elapses any tap is a no-op,
+        // so leave the right nav strip pageable. After that, taps anywhere skip to the
+        // end card, so the right strip needs to capture them for the WebView.
+        setTimeout(() => {
+            if (isPlaying) setRightNavZoneEnabled(false);
+        }, SKIP_TO_END_THRESHOLD_MS);
     }
 
     function spawnItem() {
@@ -716,7 +745,14 @@
     }
 
     function triggerWin() {
+        const didWin = score >= TARGET_SCORE;
+        resultHeading.innerText = didWin ? 'YOU WON!' : 'Thanks for playing!';
         stopEngine();
+        // End card: CTA / "Play Again" sit near the bottom-center; protect the left edge
+        // from accidental swipe-back, but keep the right strip pageable so users can still
+        // skip forward.
+        setLeftNavZoneEnabled(false);
+        setRightNavZoneEnabled(true);
         generateConfetti();
         setTimeout(() => {
             screenWin.classList.add('active');
@@ -725,6 +761,10 @@
 
 
     function resetGame() {
+        // Restore the intro-state nav zones; startGame() will re-schedule the right-zone
+        // disable after the 1-sec grace window.
+        setLeftNavZoneEnabled(true);
+        setRightNavZoneEnabled(true);
         screenWin.classList.remove('active');
 
         // Remove confetti
