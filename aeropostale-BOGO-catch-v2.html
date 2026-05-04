@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aeropostale - BOGO Catch</title>
-    <link rel="preload" as="image" href="https://kdombrovskyi-sc.github.io/playable-demos/reward.png" fetchpriority="low">
+    <link rel="preload" as="image" href="reward.png" fetchpriority="low">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
@@ -493,6 +493,7 @@
     let spawnInterval;
     let activeItems = [];
     let gameStartTime = 0;
+    let spawnIndex = 0;
     const SKIP_TO_END_THRESHOLD_MS = 1000;
 
     function setLeftNavZoneEnabled(enabled) {
@@ -598,6 +599,7 @@
 
     function startGame() {
         score = 0;
+        spawnIndex = 0;
         updateScoreUI();
         isPlaying = true;
         gameStartTime = Date.now();
@@ -619,7 +621,8 @@
     function spawnItem() {
         if (!isPlaying) return;
 
-        const emoji = GOOD_ITEMS[Math.floor(Math.random() * GOOD_ITEMS.length)];
+        const emoji = GOOD_ITEMS[spawnIndex % GOOD_ITEMS.length];
+        spawnIndex++;
 
         const itemEl = document.createElement('div');
         itemEl.classList.add('falling-item');
