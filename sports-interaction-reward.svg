@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Sports Interaction welcome offer">
+  <defs>
+    <linearGradient id="pitch" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e7a45"/>
+      <stop offset="100%" stop-color="#0f4d2c"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe566"/>
+      <stop offset="100%" stop-color="#c9a227"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="24" fill="url(#pitch)"/>
+  <rect x="0" y="0" width="400" height="400" fill="url(#pitch)" opacity="0.9"/>
+  <g opacity="0.15" stroke="#fff" stroke-width="3" fill="none">
+    <circle cx="200" cy="200" r="70"/>
+    <line x1="200" y1="0" x2="200" y2="400"/>
+  </g>
+  <rect x="40" y="280" width="320" height="8" rx="4" fill="#003da5"/>
+  <text x="200" y="72" text-anchor="middle" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" letter-spacing="2">SPORTS INTERACTION</text>
+  <text x="200" y="108" text-anchor="middle" fill="#7ec8ff" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="600">WELCOME OFFER</text>
+  <g transform="translate(200 210)">
+    <path d="M0-72 L22-22 L76-22 L32 12 L48 66 L0 34 L-48 66 L-32 12 L-76-22 L-22-22 Z" fill="url(#gold)" stroke="#fff" stroke-width="3"/>
+    <rect x="-14" y="66" width="28" height="36" rx="4" fill="url(#gold)" stroke="#fff" stroke-width="2"/>
+    <rect x="-32" y="98" width="64" height="10" rx="5" fill="#003da5"/>
+  </g>
+  <text x="200" y="328" text-anchor="middle" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="800">No Sweat Bet up to $500</text>
+  <text x="200" y="352" text-anchor="middle" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="800">125% Bonus Up to $750</text>
+  <text x="200" y="378" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="500">19+ · New players · Canada (excl. ON)</text>
+</svg>

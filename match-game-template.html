@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+
+<!--
+  MATCH GAME TEMPLATE — match-game-template.html
+
+  Quick start:
+  1. Duplicate this file (e.g. my-brand-match.html).
+  2. Edit GAME_CONFIG only: colors, copy, assets paths, menuItems, cardBackSvg, decor.
+  3. Use 3 menuItems (6 cards) or any count — pairs = menuItems.length.
+  4. Serve over HTTP if using relative image paths (python3 -m http.server).
+
+  For Snapchat: embed images as data: URIs or inline base64 before trafficking.
+-->
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Match Game Template</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        :root {
+            --brand-primary: #FFC800;
+            --brand-primaryDark: #E0A800;
+            --brand-accent: #00A9CE;
+            --brand-accentDark: #0088A8;
+            --brand-surface: #FFF9E1;
+            --brand-sky: #5EB3F5;
+            --brand-ink: #1A1A1A;
+            --brand-score-pill-bg: var(--brand-accentDark);
+            --brand-deco-solid: rgba(255, 200, 0, 0.14);
+            --brand-deco-stroke: var(--brand-primary);
+            --brand-card-back-border: rgba(255, 200, 0, 0.35);
+            --brand-gold: var(--brand-primary);
+        }
+
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background-color: var(--brand-surface);
+            margin: 0;
+            touch-action: none;
+        }
+
+        .ad-container {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(180deg, var(--brand-sky) 0%, #87CEEB 35%, var(--brand-surface) 72%, #fff5c8 100%);
+            overflow: hidden;
+            color: var(--brand-ink);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Background Watermarks */
+        .bg-deco-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .deco-text {
+            position: absolute;
+            font-weight: 900;
+            font-style: italic;
+        }
+        .deco-text.solid {
+            color: var(--brand-deco-solid, rgba(255, 200, 0, 0.14));
+        }
+        .deco-text.hollow {
+            display: flex;
+        }
+        .deco-text.hollow svg {
+            overflow: visible;
+            max-width: min(280px, 78vw);
+            height: auto;
+        }
+        .deco-text.hollow svg text {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 58px;
+            font-style: italic;
+            font-weight: 700;
+            letter-spacing: 1px;
+            fill: none;
+            stroke: var(--brand-gold);
+            stroke-opacity: 0.22;
+            stroke-width: 3;
+            paint-order: stroke;
+            stroke-linejoin: round;
+        }
+
+        .score-pill {
+            position: absolute;
+            top: max(clamp(60px, 15vmin, 90px), calc(env(safe-area-inset-top, 0px) + 12px));
+            right: max(clamp(10px, 4vmin, 20px), env(safe-area-inset-right, 0px));
+            z-index: 20;
+            font-size: clamp(11px, 3.5vmin, 14px);
+            font-weight: 700;
+            background: var(--brand-score-pill-bg, var(--brand-accentDark));
+            padding: clamp(4px, 1.5vmin, 6px) clamp(8px, 3vmin, 12px);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: clamp(4px, 1.5vmin, 6px);
+            opacity: 1;
+            transition: opacity 0.5s;
+            box-shadow: 0 4px 10px rgba(26, 26, 26, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--brand-gold);
+        }
+
+        .score-pill svg {
+            width: 16px; height: 16px; fill: var(--brand-gold);
+        }
+
+        /* Screens */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            z-index: 10;
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Start Screen */
+        #screen-start {
+            background: linear-gradient(180deg, rgba(46, 138, 212, 0.95) 0%, rgba(26, 26, 26, 0.88) 100%);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 25;
+            color: white;
+        }
+
+        .start-logo {
+            width: clamp(140px, 46vmin, 220px);
+            height: auto;
+            margin-bottom: clamp(10px, 3.5vmin, 18px);
+            display: block;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.35));
+        }
+
+        .start-subtitle {
+            font-size: clamp(14px, 4.5vmin, 18px);
+            font-weight: 700;
+            margin-bottom: clamp(10px, 4vmin, 20px);
+        }
+
+        .start-loading {
+            font-size: clamp(11px, 3.5vmin, 14px);
+            color: rgba(255,255,255,0.6);
+            margin-bottom: clamp(20px, 8vmin, 40px);
+        }
+
+        .start-cart {
+            width: clamp(57px, 18.14vmin, 91px);
+            aspect-ratio: 1 / 1;
+            background: center / contain no-repeat;
+            filter: drop-shadow(0 8px 14px rgba(26, 26, 26, 0.35));
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        .start-cart[hidden] {
+            display: none;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* +1 Float Text */
+        .float-text {
+            position: absolute;
+            font-size: clamp(20px, 7vmin, 30px);
+            font-weight: 900;
+            color: var(--brand-gold);
+            text-shadow: 0 3px 6px rgba(26, 26, 26, 0.45);
+            pointer-events: none;
+            z-index: 11;
+            animation: floatUp 0.8s ease-out forwards;
+        }
+
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-60px) scale(1.3); opacity: 0; }
+        }
+
+        /* Result Screens (Overlay) */
+        .overlay-screen {
+            background: rgba(26, 26, 26, 0.78);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            justify-content: center;
+            align-items: center;
+            padding: clamp(12px, 5vmin, 20px);
+            z-index: 30;
+        }
+
+        #screen-result.overlay-screen {
+            background: rgba(26, 26, 26, 0.38);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 30;
+        }
+
+        /* Keep matched tiles visible under the end card; block card taps */
+        #screen-game.under-result {
+            pointer-events: none;
+        }
+
+        /* Right-edge strip during gameplay: captures skip taps above the card grid */
+        .skip-strip-right {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 15%;
+            height: 100%;
+            z-index: 25;
+            pointer-events: none;
+        }
+
+        .skip-strip-right.active {
+            pointer-events: auto;
+        }
+
+        .result-heading {
+            font-family: "Avenir Next", -apple-system, sans-serif;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 500;
+            line-height: 20px;
+            letter-spacing: 0;
+            color: rgba(255, 255, 255, 0.75);
+            text-align: center;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.50);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .result-card {
+            background: #fff;
+            color: #333;
+            width: 70%;
+            max-width: 320px;
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(26, 26, 26, 0.35);
+            border-top: 4px solid var(--brand-accent);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .result-card:active {
+            transform: scale(0.98);
+        }
+
+        .result-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 12px;
+            object-fit: contain;
+            object-position: center center;
+            margin-bottom: 16px;
+            background: var(--brand-surface);
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .result-emoji {
+            font-size: clamp(80px, 28vmin, 140px);
+            margin-bottom: clamp(4px, 2vmin, 10px);
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1));
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            line-height: 1.1;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .result-title {
+            font-family: "Avenir Next", -apple-system, sans-serif;
+            font-size: 22px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: 28px;
+            letter-spacing: 0;
+            color: #000;
+            text-align: center;
+            margin-bottom: clamp(6px, 2vmin, 10px);
+        }
+
+        .result-desc {
+            font-family: "Avenir Next", -apple-system, sans-serif;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 500;
+            line-height: 20px;
+            letter-spacing: 0;
+            color: #646567;
+            text-align: center;
+        }
+
+        .cta-btn {
+            padding: 10px 12px 8px 10px;
+            background: #FFFFFF;
+            box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.13);
+            border: none;
+            border-radius: 12px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            display: inline-flex;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+
+        .cta-btn-inner {
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            display: inline-flex;
+        }
+
+        .cta-btn .icon-wrap {
+            width: 24px;
+            height: 24px;
+            position: relative;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(-2px);
+        }
+        .cta-btn .icon-wrap svg {
+            width: 24px;
+            height: 24px;
+            display: block;
+        }
+
+        .cta-btn-text {
+            justify-content: center;
+            display: flex;
+            flex-direction: column;
+            color: #000;
+            font-family: "Avenir Next", -apple-system, sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            line-height: 28px;
+            word-wrap: break-word;
+            text-shadow: 0px 2px 20px rgba(79, 20, 20, 0.25);
+        }
+
+        .cta-btn:active {
+            background: #EEEEEE;
+        }
+
+        .play-again-btn {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            border-radius: 100px;
+            padding: clamp(8px, 2.5vmin, 12px) clamp(18px, 5.5vmin, 26px);
+            font-family: "Avenir Next", -apple-system, sans-serif;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: 20px;
+            color: rgba(255, 255, 255, 0.75);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: clamp(5px, 1.5vmin, 7px);
+            transition: all 0.2s;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.13);
+        }
+
+        .play-again-btn:active {
+            color: white;
+        }
+
+
+        /* Confetti — falls over the matched board (above cards, under end-card UI) */
+        #screen-game .confetti {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+
+        /* Game Board (memory match) */
+        #screen-game {
+            z-index: 5;
+            box-sizing: border-box;
+            padding-top: max(clamp(70px, 18vmin, 100px), calc(env(safe-area-inset-top, 0px) + 56px));
+            padding-bottom: max(clamp(16px, 4vmin, 28px), env(safe-area-inset-bottom, 0px));
+            padding-left: max(clamp(16px, 4.5vmin, 28px), env(safe-area-inset-left, 0px));
+            padding-right: max(clamp(16px, 4.5vmin, 28px), env(safe-area-inset-right, 0px));
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: clamp(10px, 3vmin, 18px);
+            width: min(420px, 100%);
+            height: 100%;
+            max-height: 100%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card {
+            perspective: 1000px;
+            cursor: pointer;
+            width: 100%;
+            min-width: 0;
+            min-height: 0;
+            aspect-ratio: 1 / 1.05;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner,
+        .card.matched .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            border-radius: 14px;
+            box-shadow: 0 6px 14px rgba(26, 26, 26, 0.2);
+        }
+
+        .card-back {
+            background: linear-gradient(145deg, var(--brand-accent) 0%, var(--brand-accentDark) 100%);
+            border: 2px solid var(--brand-card-back-border, rgba(255, 200, 0, 0.35));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-back-icon {
+            width: clamp(52px, 17vmin, 72px);
+            line-height: 0;
+            opacity: 0.95;
+        }
+
+        .card-back-icon svg {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .card-front {
+            background: #ffffff;
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            color: var(--brand-ink);
+            position: relative;
+            border-top: 3px solid var(--brand-gold);
+        }
+
+        .card-image {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+        }
+
+        .card-image img {
+            max-width: 92%;
+            max-height: clamp(72px, 22vmin, 120px);
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            background: transparent;
+            filter: drop-shadow(0 6px 10px rgba(26, 26, 26, 0.2));
+        }
+
+        .card-name {
+            font-size: clamp(10px, 3vmin, 13px);
+            font-weight: 800;
+            text-align: center;
+            line-height: 1.2;
+            color: var(--brand-ink);
+        }
+
+        .match-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 24px;
+            height: 24px;
+            background: var(--brand-gold, var(--brand-primary));
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1;
+            box-shadow: 0 2px 6px rgba(26, 26, 26, 0.25);
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition-delay: 0.2s;
+            z-index: 10;
+        }
+
+        .card.matched .match-badge {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="ad-container" id="game-container">
+
+    <!-- Background Watermarks -->
+    <div class="bg-deco-container" id="bg-deco"></div>
+
+    <div class="score-pill" id="score-pill">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <span id="score-text">0/3</span>
+    </div>
+
+    <div class="skip-strip-right" id="skip-strip-right" aria-hidden="true"></div>
+
+    <div id="screen-start" class="screen active">
+        <img class="start-logo" id="start-logo" src="" alt="">
+        <p class="start-subtitle" id="start-subtitle"></p>
+        <p class="start-loading" id="start-loading"></p>
+        <div class="start-cart" id="start-hero" aria-hidden="true" hidden></div>
+    </div>
+
+    <div id="screen-game" class="screen">
+        <div class="game-board" id="board"></div>
+    </div>
+
+    <div id="screen-result" class="screen overlay-screen">
+        <div class="result-heading" id="result-heading"></div>
+        <div class="result-card" onclick="handleCTA()" role="button" tabindex="0">
+            <img class="result-image" id="reward-img" src="" alt="">
+            <h2 class="result-title" id="result-title"></h2>
+            <p class="result-desc" id="result-desc"></p>
+        </div>
+        <button class="cta-btn" onclick="handleCTA()">
+            <span class="cta-btn-inner">
+                <span class="cta-btn-text" id="cta-text"></span>
+            </span>
+        </button>
+        <button type="button" class="play-again-btn" id="play-again-btn" onclick="resetGame()"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.00008 2.00001C2.00008 1.63334 1.70008 1.33334 1.33341 1.33334C0.966748 1.33334 0.666748 1.63334 0.666748 2.00001V6.67334C0.666748 7.04001 0.966748 7.34001 1.33341 7.34001H5.99341C6.36008 7.34001 6.66008 7.04001 6.66008 6.67334C6.66008 6.30668 6.36008 6.00668 5.99341 6.00668H3.04675C3.84675 4.00668 5.77342 2.67334 7.99341 2.67334C10.9334 2.67334 13.3267 5.06668 13.3267 8.00668C13.3267 10.9467 10.9334 13.34 7.99341 13.34C5.98008 13.34 4.16675 12.2 3.26008 10.3733C3.10008 10.0467 2.70008 9.90668 2.36675 10.0733C2.04008 10.24 1.90008 10.6333 2.06675 10.9667C3.20675 13.2467 5.48008 14.6667 8.00008 14.6667C11.6734 14.6667 14.6667 11.6733 14.6667 8.00001C14.6667 4.32668 11.6734 1.33334 8.00008 1.33334C5.38008 1.33334 3.08675 2.82668 2.00008 5.09334V2.00001Z" fill="#B0B1B2"/></svg> <span id="play-again-text">Play Again</span></button>
+    </div>
+
+
+</div>
+
+<script>
+
+    // =============================================================================
+    // GAME_CONFIG — personalize your playable here
+    // =============================================================================
+    const GAME_CONFIG = {
+        meta: {
+            title: 'Brand Name - Match',
+        },
+        colors: {
+            primary: '#FFC800',
+            primaryDark: '#E0A800',
+            accent: '#00A9CE',
+            accentDark: '#0088A8',
+            surface: '#FFF9E1',
+            sky: '#5EB3F5',
+            ink: '#1A1A1A',
+            scorePillBg: null, // null = use accentDark
+            decoSolid: 'rgba(255, 200, 0, 0.14)',
+            decoStroke: null, // null = use primary
+            cardBackBorder: 'rgba(255, 200, 0, 0.35)',
+            startOverlay: 'linear-gradient(180deg, rgba(46, 138, 212, 0.95) 0%, rgba(26, 26, 26, 0.88) 100%)',
+            pageGradient: 'linear-gradient(180deg, var(--brand-sky) 0%, #87CEEB 35%, var(--brand-surface) 72%, #fff5c8 100%)',
+        },
+        copy: {
+            startSubtitle: 'Match the flavors!',
+            startLoading: 'Get ready to play...',
+            resultHeading: 'YOU MATCHED!',
+            resultTitle: 'Your reward message here.',
+            resultDesc: 'Supporting line for the end card.',
+            ctaText: 'Learn More',
+            ctaUrl: 'https://example.com',
+            playAgainText: 'Play Again',
+        },
+        assets: {
+            // URL, relative path, or data:image/... URI
+            startLogo: '',
+            startHero: '', // optional CSS background-image for .start-cart
+            resultImage: '',
+        },
+        cardBackSvg: `<svg viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="14" y="18" width="36" height="44" rx="4" stroke="rgba(255,255,255,0.9)" stroke-width="2.2"/>
+            <path d="M22 18 V14 H42 V18" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M32 26 V52" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>`,
+        menuItems: [
+            { id: 'item-a', name: 'Item A', image: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="16" fill="#FFE8A3"/><text x="60" y="72" text-anchor="middle" font-size="48" font-family="system-ui,sans-serif">A</text></svg>') },
+            { id: 'item-b', name: 'Item B', image: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="16" fill="#B8ECFF"/><text x="60" y="72" text-anchor="middle" font-size="48" font-family="system-ui,sans-serif">B</text></svg>') },
+            { id: 'item-c', name: 'Item C', image: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="16" fill="#C8F5C0"/><text x="60" y="72" text-anchor="middle" font-size="48" font-family="system-ui,sans-serif">C</text></svg>') },
+        ],
+        decor: [
+            { kind: 'hollow', text: 'MATCH', style: 'top: 12%; left: -3%; transform: rotate(-10deg);' },
+            { kind: 'solid', text: 'WIN', style: 'top: 38%; right: -8%; font-size: 3.5rem; transform: rotate(12deg);' },
+            { kind: 'hollow', text: 'PLAY', style: 'bottom: 20%; left: 50%; transform: translateX(-50%) rotate(-8deg);' },
+            { kind: 'solid', text: '★', style: 'bottom: 55%; left: 30%; font-size: 3rem; transform: rotate(5deg);' },
+        ],
+        confettiEmojis: ['🎊', '🎉', '✨', '⭐'],
+    };
+
+    function applyGameConfig(cfg) {
+        document.title = cfg.meta.title;
+        const root = document.documentElement;
+        const c = cfg.colors;
+        const set = (name, val) => { if (val != null && val !== '') root.style.setProperty(name, val); };
+        set('--brand-primary', c.primary);
+        set('--brand-primaryDark', c.primaryDark);
+        set('--brand-accent', c.accent);
+        set('--brand-accentDark', c.accentDark);
+        set('--brand-surface', c.surface);
+        set('--brand-sky', c.sky);
+        set('--brand-ink', c.ink);
+        set('--brand-score-pill-bg', c.scorePillBg || c.accentDark);
+        set('--brand-deco-solid', c.decoSolid);
+        set('--brand-deco-stroke', c.decoStroke || c.primary);
+        set('--brand-gold', c.gold || c.primary);
+
+        const ad = document.querySelector('.ad-container');
+        if (ad && c.pageGradient) ad.style.background = c.pageGradient;
+        const start = document.getElementById('screen-start');
+        if (start && c.startOverlay) start.style.background = c.startOverlay;
+
+        document.getElementById('start-subtitle').textContent = cfg.copy.startSubtitle;
+        document.getElementById('start-loading').textContent = cfg.copy.startLoading;
+        document.getElementById('result-heading').textContent = cfg.copy.resultHeading;
+        document.getElementById('result-title').textContent = cfg.copy.resultTitle;
+        document.getElementById('result-desc').textContent = cfg.copy.resultDesc;
+        document.getElementById('cta-text').textContent = cfg.copy.ctaText;
+        const playAgainEl = document.getElementById('play-again-text');
+        if (playAgainEl) playAgainEl.textContent = cfg.copy.playAgainText || 'Play Again';
+
+        const logo = document.getElementById('start-logo');
+        if (cfg.assets.startLogo) {
+            logo.src = cfg.assets.startLogo;
+            logo.alt = cfg.meta.title;
+            logo.hidden = false;
+        } else {
+            logo.hidden = true;
+        }
+
+        const hero = document.getElementById('start-hero');
+        if (cfg.assets.startHero) {
+            hero.style.backgroundImage = `url("${cfg.assets.startHero}")`;
+            hero.hidden = false;
+        } else {
+            hero.hidden = true;
+        }
+
+        const reward = document.getElementById('reward-img');
+        if (cfg.assets.resultImage) {
+            reward.src = cfg.assets.resultImage;
+            reward.hidden = false;
+        } else {
+            reward.hidden = true;
+        }
+
+        const decoRoot = document.getElementById('bg-deco');
+        decoRoot.innerHTML = (cfg.decor || []).map((d) => {
+            if (d.kind === 'hollow') {
+                const t = d.text.replace(/</g, '');
+                const w = Math.max(180, t.length * 34);
+                return `<div class="deco-text hollow" style="${d.style}"><svg viewBox="0 0 ${w} 70" width="${w}" height="61" aria-hidden="true"><text x="8" y="52">${t}</text></svg></div>`;
+            }
+            return `<div class="deco-text solid" style="${d.style}">${d.text}</div>`;
+        }).join('');
+
+        if (c.cardBackBorder) {
+            document.documentElement.style.setProperty('--brand-card-back-border', c.cardBackBorder);
+        }
+    }
+
+    applyGameConfig(GAME_CONFIG);
+
+    const MENU_ITEMS = GAME_CONFIG.menuItems;
+    const cardBackSvg = GAME_CONFIG.cardBackSvg;
+    let confEmojis = GAME_CONFIG.confettiEmojis;
+
+    const AeroAudio = (() => {
+        let ctx = null;
+        let musicGain = null;
+        let padGain = null;
+        let padOscs = [];
+        let padLFO = null;
+        let scheduler = null;
+        let nextNoteTime = 0;
+        let noteIndex = 0;
+        let muted = false;
+        // Music requested while ctx was still suspended; replay when it unlocks.
+        let pendingMusic = false;
+        let resumeWired = false;
+
+        // C-major bouncy-pop arpeggio (notes[]) and 0.14s per note from AeroMusicState.
+        const NOTES = [
+            523.25, 659.25, 783.99, 880.00, 783.99,
+            659.25, 783.99, 880.00, 1046.50, 880.00,
+            783.99, 659.25, 523.25, 659.25, 783.99, 659.25
+        ];
+        const NOTE_LEN = 0.14;
+
+        function ensureCtx() {
+            if (!ctx) {
+                const C = window.AudioContext || window.webkitAudioContext;
+                if (!C) return null;
+                ctx = new C();
+                // Some webviews fire 'statechange' instead of resolving resume();
+                // either path drains pendingMusic.
+                if (!resumeWired) {
+                    resumeWired = true;
+                    ctx.addEventListener && ctx.addEventListener('statechange', drainPending);
+                }
+            }
+            if (ctx.state === 'suspended') {
+                const p = ctx.resume();
+                if (p && typeof p.then === 'function') p.then(drainPending).catch(() => {});
+            }
+            return ctx;
+        }
+
+        function drainPending() {
+            if (!ctx || ctx.state !== 'running') return;
+            if (pendingMusic) {
+                pendingMusic = false;
+                startMusic();
+            }
+        }
+
+        function scheduleNote(freq, when) {
+            const dur = NOTE_LEN;
+            // Fundamental sine, exponential decay (Swift: env = exp(-np*4))
+            const osc1 = ctx.createOscillator();
+            osc1.type = 'sine';
+            osc1.frequency.value = freq;
+            const g1 = ctx.createGain();
+            g1.gain.setValueAtTime(0.0001, when);
+            g1.gain.exponentialRampToValueAtTime(0.18, when + 0.005);
+            g1.gain.exponentialRampToValueAtTime(0.0008, when + dur * 0.95);
+            osc1.connect(g1).connect(musicGain);
+            osc1.start(when);
+            osc1.stop(when + dur);
+
+            // Octave overtone (Swift: oct = sin(phase2*2π) * 0.2)
+            const osc2 = ctx.createOscillator();
+            osc2.type = 'sine';
+            osc2.frequency.value = freq * 2;
+            const g2 = ctx.createGain();
+            g2.gain.setValueAtTime(0.0001, when);
+            g2.gain.exponentialRampToValueAtTime(0.04, when + 0.005);
+            g2.gain.exponentialRampToValueAtTime(0.0006, when + dur * 0.95);
+            osc2.connect(g2).connect(musicGain);
+            osc2.start(when);
+            osc2.stop(when + dur);
+        }
+
+        function startMusic() {
+            if (muted) return;
+            const c = ensureCtx();
+            if (!c || scheduler) return;
+            // Autoplay-policy guard: if the context isn't actually running yet
+            // (e.g. game auto-started via MRAID before any user gesture), defer
+            // until the first tap/click resumes it. Otherwise notes get scheduled
+            // against a frozen currentTime and nothing is heard the first round.
+            if (c.state !== 'running') {
+                pendingMusic = true;
+                return;
+            }
+
+            // 1-second fade-in (Swift: fadeIn = min(1, t/1))
+            musicGain = c.createGain();
+            musicGain.gain.setValueAtTime(0, c.currentTime);
+            musicGain.gain.linearRampToValueAtTime(0.9, c.currentTime + 1.0);
+            musicGain.connect(c.destination);
+
+            // Sustained C-major triad pad (C4/E4/G4) with LFO swell
+            padGain = c.createGain();
+            padGain.gain.value = 0.06;
+            padGain.connect(musicGain);
+
+            const lfo = c.createOscillator();
+            lfo.frequency.value = 2.0;
+            const lfoGain = c.createGain();
+            lfoGain.gain.value = 0.015;
+            lfo.connect(lfoGain);
+            lfoGain.connect(padGain.gain);
+            lfo.start();
+            padLFO = lfo;
+
+            const padFreqs = [261.63, 329.63, 392.00];
+            const padLevels = [1.0, 0.7, 0.5];
+            padOscs = padFreqs.map((f, i) => {
+                const osc = c.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.value = f;
+                const g = c.createGain();
+                g.gain.value = padLevels[i] * 0.4;
+                osc.connect(g);
+                g.connect(padGain);
+                osc.start();
+                return { osc, g };
+            });
+
+            // Lookahead scheduler (50ms tick, 200ms lookahead)
+            nextNoteTime = c.currentTime + 0.05;
+            noteIndex = 0;
+            const tick = () => {
+                if (!scheduler || !ctx) return;
+                while (nextNoteTime < ctx.currentTime + 0.20) {
+                    scheduleNote(NOTES[noteIndex % NOTES.length], nextNoteTime);
+                    nextNoteTime += NOTE_LEN;
+                    noteIndex++;
+                }
+            };
+            scheduler = setInterval(tick, 50);
+            tick();
+        }
+
+        function stopMusic() {
+            pendingMusic = false;
+            if (scheduler) { clearInterval(scheduler); scheduler = null; }
+            if (!ctx) return;
+            const t = ctx.currentTime;
+            if (musicGain) {
+                try {
+                    musicGain.gain.cancelScheduledValues(t);
+                    musicGain.gain.setValueAtTime(musicGain.gain.value, t);
+                    musicGain.gain.linearRampToValueAtTime(0, t + 0.2);
+                } catch (e) {}
+            }
+            const padOscsRef = padOscs;
+            const padLFORef = padLFO;
+            const padGainRef = padGain;
+            const musicGainRef = musicGain;
+            padOscs = [];
+            padLFO = null;
+            padGain = null;
+            musicGain = null;
+            setTimeout(() => {
+                padOscsRef.forEach(o => { try { o.osc.stop(); } catch (e) {} });
+                if (padLFORef) { try { padLFORef.stop(); } catch (e) {} }
+                try { if (padGainRef) padGainRef.disconnect(); } catch (e) {}
+                try { if (musicGainRef) musicGainRef.disconnect(); } catch (e) {}
+            }, 260);
+        }
+
+        // SFX approximations of the iOS system sounds used in the Swift port.
+
+        // 1057 "Tink" — short bright blip used for taps/start.
+        function playTap() {
+            if (muted) return;
+            const c = ensureCtx(); if (!c || c.state !== 'running') return;
+            const t = c.currentTime;
+            const osc = c.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(2200, t);
+            osc.frequency.exponentialRampToValueAtTime(900, t + 0.08);
+            const g = c.createGain();
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.exponentialRampToValueAtTime(0.25, t + 0.005);
+            g.gain.exponentialRampToValueAtTime(0.0008, t + 0.10);
+            osc.connect(g).connect(c.destination);
+            osc.start(t); osc.stop(t + 0.12);
+        }
+
+        // 1521 "Peek" — bright two-tone pluck used on each catch.
+        function playCatch() {
+            if (muted) return;
+            const c = ensureCtx(); if (!c || c.state !== 'running') return;
+            const t = c.currentTime;
+            const layers = [
+                { freq: 880,    type: 'triangle', amp: 0.30 },
+                { freq: 1318.5, type: 'sine',     amp: 0.18 }
+            ];
+            layers.forEach(({ freq, type, amp }) => {
+                const osc = c.createOscillator();
+                osc.type = type;
+                osc.frequency.value = freq;
+                const g = c.createGain();
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.exponentialRampToValueAtTime(amp, t + 0.005);
+                g.gain.exponentialRampToValueAtTime(0.0008, t + 0.18);
+                osc.connect(g).connect(c.destination);
+                osc.start(t); osc.stop(t + 0.20);
+            });
+        }
+
+        // 1335 "Glass" — ascending C-major arpeggio chime for the win.
+        function playWin() {
+            if (muted) return;
+            const c = ensureCtx(); if (!c || c.state !== 'running') return;
+            const t0 = c.currentTime;
+            const seq = [
+                { f: 523.25,  dt: 0.00, dur: 0.40 },
+                { f: 659.25,  dt: 0.10, dur: 0.40 },
+                { f: 783.99,  dt: 0.20, dur: 0.50 },
+                { f: 1046.50, dt: 0.30, dur: 0.75 }
+            ];
+            seq.forEach(({ f, dt, dur }) => {
+                const t = t0 + dt;
+                const osc = c.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.value = f;
+                const g = c.createGain();
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.exponentialRampToValueAtTime(0.30, t + 0.01);
+                g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+                osc.connect(g).connect(c.destination);
+                osc.start(t); osc.stop(t + dur + 0.05);
+
+                const osc2 = c.createOscillator();
+                osc2.type = 'sine';
+                osc2.frequency.value = f * 2;
+                const g2 = c.createGain();
+                g2.gain.setValueAtTime(0.0001, t);
+                g2.gain.exponentialRampToValueAtTime(0.10, t + 0.01);
+                g2.gain.exponentialRampToValueAtTime(0.0008, t + dur * 0.7);
+                osc2.connect(g2).connect(c.destination);
+                osc2.start(t); osc2.stop(t + dur + 0.05);
+            });
+        }
+
+        function resume() { ensureCtx(); }
+
+        return { startMusic, stopMusic, playTap, playCatch, playWin, resume };
+    })();
+
+    // Most webviews block AudioContext until a user gesture. We can't rely on the
+    // MRAID viewable callback as a gesture, so on the first real touch/click we
+    // resume the context. AeroAudio.startMusic() defers if the context is still
+    // suspended and is replayed automatically once it transitions to running.
+    let _audioUnlocked = false;
+    const _audioPrimer = () => {
+        if (_audioUnlocked) return;
+        _audioUnlocked = true;
+        AeroAudio.resume();
+        // If the game already auto-started (MRAID) before this gesture, kick the
+        // music now — startMusic() will no-op until ctx is actually running, and
+        // the statechange/resume handler will then drain the pending request.
+        if (typeof isPlaying !== 'undefined' && isPlaying && !isPaused) {
+            AeroAudio.startMusic();
+        }
+        window.removeEventListener('touchstart', _audioPrimer, true);
+        window.removeEventListener('mousedown', _audioPrimer, true);
+    };
+    window.addEventListener('touchstart', _audioPrimer, true);
+    window.addEventListener('mousedown', _audioPrimer, true);
+
+
+    const TOTAL_PAIRS = MENU_ITEMS.length;
+
+    let cards = [];
+    let hasFlippedCard = false;
+    let lockBoard = false;
+    let firstCard, secondCard;
+    let matchesFound = 0;
+    let hasStarted = false;
+    let isPlaying = false;
+    let gameStartTime = 0;
+    const SKIP_TO_END_THRESHOLD_MS = 1000;
+
+    const boardElement = document.getElementById('board');
+    const scoreTextElement = document.getElementById('score-text');
+    const screenStart = document.getElementById('screen-start');
+    const screenGame = document.getElementById('screen-game');
+    const screenResult = document.getElementById('screen-result');
+    const container = document.getElementById('game-container');
+    const resultHeading = document.getElementById('result-heading');
+    const skipStripRight = document.getElementById('skip-strip-right');
+
+    function setLeftNavZoneEnabled(enabled) {
+        if (window.ScPlayableAd && typeof ScPlayableAd.setLeftNavZoneEnabled === 'function') {
+            ScPlayableAd.setLeftNavZoneEnabled(enabled);
+        }
+    }
+    function setRightNavZoneEnabled(enabled) {
+        if (window.ScPlayableAd && typeof ScPlayableAd.setRightNavZoneEnabled === 'function') {
+            ScPlayableAd.setRightNavZoneEnabled(enabled);
+        }
+    }
+
+    function handleEndCardBackdropTap(clientX) {
+        if (!screenResult.classList.contains('active')) return;
+        if (clientX >= window.innerWidth * 0.15) return;
+        resetGame();
+    }
+
+    screenResult.addEventListener('click', (e) => {
+        if (e.target !== screenResult) return;
+        handleEndCardBackdropTap(e.clientX);
+    });
+
+    screenResult.addEventListener('touchend', (e) => {
+        if (e.target !== screenResult) return;
+        const touch = e.changedTouches && e.changedTouches[0];
+        if (!touch) return;
+        handleEndCardBackdropTap(touch.clientX);
+    });
+
+    function maybeSkipToEnd() {
+        if (!isPlaying) return false;
+        if (Date.now() - gameStartTime < SKIP_TO_END_THRESHOLD_MS) return false;
+        triggerWin();
+        return true;
+    }
+
+    function triggerWin() {
+        if (!isPlaying) return;
+        isPlaying = false;
+        skipStripRight.classList.remove('active');
+        showResult();
+    }
+
+    container.addEventListener('click', (e) => {
+        if (!isPlaying) return;
+        if (e.target.closest('.card')) return;
+        if (e.target.closest('#screen-start')) return;
+        if (e.target.closest('#screen-result')) return;
+        maybeSkipToEnd();
+    });
+
+    skipStripRight.addEventListener('click', (e) => {
+        e.stopPropagation();
+        maybeSkipToEnd();
+    });
+
+    function beginCountdown() {
+        setTimeout(() => {
+            screenStart.classList.remove('active');
+            screenGame.classList.add('active');
+            setTimeout(() => {
+                AeroAudio.playTap();
+                AeroAudio.startMusic();
+                initGame();
+            }, 300);
+        }, 700);
+    }
+
+    function tryStart() {
+        if (hasStarted) return;
+        hasStarted = true;
+        beginCountdown();
+    }
+
+    function onViewable(viewable) {
+        if (viewable) {
+            if (!hasStarted) tryStart();
+            else AeroAudio.startMusic();
+        } else {
+            AeroAudio.stopMusic();
+        }
+    }
+
+    if (typeof mraid !== 'undefined') {
+        mraid.addEventListener('viewableChange', onViewable);
+        if (mraid.getState() !== 'loading' && mraid.isViewable()) tryStart();
+        mraid.addEventListener('ready', function () {
+            if (mraid.isViewable()) tryStart();
+        });
+    } else {
+        beginCountdown();
+    }
+
+    function initGame() {
+        hasFlippedCard = false;
+        lockBoard = false;
+        firstCard = null;
+        secondCard = null;
+        matchesFound = 0;
+        scoreTextElement.innerText = '0/' + TOTAL_PAIRS;
+        screenResult.classList.remove('active');
+        screenGame.classList.add('active');
+        screenGame.classList.remove('under-result');
+        isPlaying = true;
+        gameStartTime = Date.now();
+        skipStripRight.classList.remove('active');
+        setLeftNavZoneEnabled(true);
+        setRightNavZoneEnabled(true);
+        setTimeout(() => {
+            if (!isPlaying) return;
+            setRightNavZoneEnabled(false);
+            skipStripRight.classList.add('active');
+        }, SKIP_TO_END_THRESHOLD_MS);
+        document.querySelectorAll('.confetti').forEach(el => el.remove());
+
+        cards = [...MENU_ITEMS, ...MENU_ITEMS];
+        cards.sort(() => Math.random() - 0.5);
+
+        boardElement.innerHTML = '';
+        cards.forEach((item) => {
+            const cardEl = document.createElement('div');
+            cardEl.classList.add('card');
+            cardEl.dataset.id = item.id;
+            cardEl.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-back"><span class="card-back-icon">${cardBackSvg}</span></div>
+                    <div class="card-front">
+                        <div class="match-badge">✔</div>
+                        <div class="card-image"><img src="${item.image}" alt="${item.name}"></div>
+                        <div class="card-name">${item.name}</div>
+                    </div>
+                </div>
+            `;
+            cardEl.addEventListener('click', flipCard);
+            boardElement.appendChild(cardEl);
+        });
+    }
+
+    function flipCard() {
+        if (lockBoard) return;
+        if (this === firstCard) return;
+        if (this.classList.contains('matched')) return;
+
+        AeroAudio.playTap();
+        this.classList.add('flipped');
+
+        if (!hasFlippedCard) {
+            hasFlippedCard = true;
+            firstCard = this;
+            return;
+        }
+
+        secondCard = this;
+        checkForMatch();
+    }
+
+    function checkForMatch() {
+        const isMatch = firstCard.dataset.id === secondCard.dataset.id;
+        if (isMatch) disableCards();
+        else unflipCards();
+    }
+
+    function disableCards() {
+        firstCard.removeEventListener('click', flipCard);
+        secondCard.removeEventListener('click', flipCard);
+        firstCard.classList.add('matched');
+        secondCard.classList.add('matched');
+        matchesFound++;
+        scoreTextElement.innerText = matchesFound + '/' + TOTAL_PAIRS;
+        resetBoard();
+
+        if (matchesFound === TOTAL_PAIRS) {
+            isPlaying = false;
+            skipStripRight.classList.remove('active');
+            setTimeout(showResult, 800);
+        }
+    }
+
+    function unflipCards() {
+        lockBoard = true;
+        setTimeout(() => {
+            firstCard.classList.remove('flipped');
+            secondCard.classList.remove('flipped');
+            resetBoard();
+        }, 1000);
+    }
+
+    function resetBoard() {
+        [hasFlippedCard, lockBoard] = [false, false];
+        [firstCard, secondCard] = [null, null];
+    }
+
+    function generateConfetti() {
+        for (let i = 0; i < 40; i++) {
+            const el = document.createElement('div');
+            el.className = 'confetti';
+            el.innerText = confEmojis[Math.floor(Math.random() * confEmojis.length)];
+            const x = Math.random() * window.innerWidth;
+            const size = 18 + Math.random() * 20;
+            const duration = 2.5 + Math.random() * 2.5;
+            const delay = Math.random() * 0.5;
+            el.style.left = x + 'px';
+            el.style.top = '-50px';
+            el.style.fontSize = size + 'px';
+            el.style.transition = `transform ${duration}s ease-in, top ${duration}s ease-in`;
+            el.style.transitionDelay = delay + 's';
+            screenGame.appendChild(el);
+            setTimeout(() => {
+                el.style.top = (window.innerHeight + 100) + 'px';
+                el.style.transform = `rotate(${Math.random() * 720 - 360}deg)`;
+            }, 50);
+            setTimeout(() => {
+                if (el.parentNode) el.parentNode.removeChild(el);
+            }, (duration + delay) * 1000 + 100);
+        }
+    }
+
+    function showResult() {
+        resultHeading.innerText = 'YOU MATCHED!';
+        isPlaying = false;
+        skipStripRight.classList.remove('active');
+        screenGame.classList.add('active');
+        screenGame.classList.add('under-result');
+        AeroAudio.stopMusic();
+        AeroAudio.playWin();
+        // End card: block left-edge swipe-back; keep right strip pageable for skip-forward.
+        setLeftNavZoneEnabled(false);
+        setRightNavZoneEnabled(true);
+        generateConfetti();
+        setTimeout(() => {
+            screenResult.classList.add('active');
+        }, 300);
+    }
+
+    function resetGame() {
+        isPlaying = false;
+        setLeftNavZoneEnabled(true);
+        setRightNavZoneEnabled(true);
+        screenResult.classList.remove('active');
+        screenGame.classList.remove('under-result');
+        skipStripRight.classList.remove('active');
+        document.querySelectorAll('.confetti').forEach(el => el.remove());
+        AeroAudio.startMusic();
+        initGame();
+    }
+
+    function handleCTA() {
+        var url = GAME_CONFIG.copy.ctaUrl;
+        if (typeof mraid !== 'undefined') {
+            mraid.open(url);
+        } else {
+            window.open(url, '_blank');
+        }
+    }
+</script>
+
+</body>
+</html>
